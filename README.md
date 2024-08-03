@@ -1,6 +1,13 @@
 ## TODO
 
 - Make affectedRoundsLeft correct and clean up when effects should be applied (currently inconsistent)
+- use Enum for abilities and inventory items key.
+
+## Run in Local
+
+- npm install
+- npm run start
+- Choose options using numbers (1, 2, 3, 4, etc.)
 
 ## Setup
 

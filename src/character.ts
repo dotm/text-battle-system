@@ -69,7 +69,23 @@ export class Character {
         }
       case "3":
         return { type: "flee" }
-        //other case here ~kodok
+      case "4":
+        const inventoryItemArray = Object
+          .entries(this.currentState.inventory) //[nameAsKey, quantityAsValue]
+        if (inventoryItemArray.length === 0) {
+          console.log("Inventory empty. Please choose another action.")
+          return await this.takeAction()
+        }
+        const sortedInventoryItemArray = inventoryItemArray.sort((a,b) => a[0].localeCompare(b[0]))
+        const itemStr = await rl.question(
+          `(${this.characterName}) Please choose item: ${sortedInventoryItemArray.map(
+            ([name, quantity], i)=>`${name} x ${quantity} (${i+1})`
+          ).join(", ")}\n`
+        )
+        return {
+          type: "use-item",
+          itemName: (sortedInventoryItemArray[parseInt(itemStr)-1] ?? [])[0] ?? undefined,
+        }
       default:
         return  { type: "do-nothing" }
     }
@@ -88,7 +104,6 @@ export class Character {
   static deserialize(obj: CharacterSerializedOutput) {
     return new Character(obj)
   }
-  // updateEffectState: any,
 }
 
 export function CreateDefaultWarriorCharacter(){
@@ -100,7 +115,7 @@ export function CreateDefaultWarriorCharacter(){
       activeAbilityNames: ["Warrior's Stun", "Warrior's Immobilize"], //can only specify one active ability for non-NPC character
       outOfCombatAbilityName: "Warrior's Instinct",
       maxHealthPoints: 150,
-      inventory: [],
+      inventory: {},
       baseAttackDamage: 10,
       penetrationWhenDoingAttack: 0,
       armorWhenReceivingAttack: 0,
@@ -121,7 +136,7 @@ export function CreateDefaultMageCharacter(){
       activeAbilityNames: ["Mage's Illusion", "Mage's Poison Hex"], //can only specify one active ability for non-NPC character
       outOfCombatAbilityName: "Mage's Barrier",
       maxHealthPoints: 100,
-      inventory: [],
+      inventory: {"Health Potion": 1},
       baseAttackDamage: 20,
       penetrationWhenDoingAttack: 0,
       armorWhenReceivingAttack: 0,
@@ -142,7 +157,7 @@ export function CreateDefaultRogueCharacter(){
       activeAbilityNames: ["Rogue's Evade", "Rogue's Armor Weaken"], //can only specify one active ability for non-NPC character
       outOfCombatAbilityName: "Rogue's Steal Item",
       maxHealthPoints: 100,
-      inventory: [],
+      inventory: {"Health Potion": 3},
       baseAttackDamage: 20,
       penetrationWhenDoingAttack: 0,
       armorWhenReceivingAttack: 0,

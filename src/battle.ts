@@ -1,5 +1,6 @@
 import { GlobalActiveAbilityDirectory } from "./activeAbility";
 import { Character } from "./character";
+import { GlobalItemDirectory } from "./item";
 import { ActionOutcomeUpdateStat, BattleRound, PlayerAction, PlayerActionOutcome } from "./types";
 
 export class Battle {
@@ -78,14 +79,41 @@ export class Battle {
           }
         ] }
       }
+    } else if (player1Action.type === "use-item") {
+      const itemUsed = GlobalItemDirectory.get(player1Action.itemName ?? "")
+      if (itemUsed?.target === "self"){
+        this.player1.currentState.effectsApplied.push(itemUsed)
+      } else if (itemUsed?.target === "enemy") {
+        this.player2.currentState.effectsApplied.push(itemUsed)
+      } else {
+        //do nothing
+      }
+      if (itemUsed?.target) {
+        player1ActionOutcome = { outcomes: [
+          {
+            type: "update-stat",
+            itemName: itemUsed.name,
+            ...itemUsed
+          }
+        ] }
+      }
     }
-    //apply stats and effects update from player 1 action
+    //apply stats update from player 1 action
     for (let i = 0; i < player1ActionOutcome.outcomes.length; i++) {
       const outcome = player1ActionOutcome.outcomes[i];
       if (outcome.type === 'update-stat'){
         const updateStatOutcome = outcome as ActionOutcomeUpdateStat
-        if (updateStatOutcome.target === "enemy" && updateStatOutcome.affectedStat === "healthPoints") {
+        if (updateStatOutcome.target === "self" && updateStatOutcome.affectedStat === "healthPoints") {
+          const newHealthPoint = eval(`${this.player1.currentState.healthPoints} ${updateStatOutcome.modifier}`)
+          this.player1.currentState.healthPoints = Math.min(newHealthPoint, this.player1.baseState.maxHealthPoints)
+        }else if (updateStatOutcome.target === "enemy" && updateStatOutcome.affectedStat === "healthPoints") {
           this.player2.currentState.healthPoints = eval(`${this.player2.currentState.healthPoints} ${updateStatOutcome.modifier}`)
+        }
+        if (updateStatOutcome.source === "Inventory" && updateStatOutcome.itemName) {
+          this.player1.currentState.inventory[updateStatOutcome.itemName] -= 1
+          if (this.player1.currentState.inventory[updateStatOutcome.itemName] <= 0) {
+            delete this.player1.currentState.inventory[updateStatOutcome.itemName]
+          }
         }
       }
     }
@@ -109,18 +137,54 @@ export class Battle {
       } else {
         //do nothing
       }
+      if (activeAbility?.target) {
+        player2ActionOutcome = { outcomes: [
+          {
+            type: "update-effect",
+            ...activeAbility
+          }
+        ] }
+      }
+    } else if (player2Action.type === "use-item") {
+      const itemUsed = GlobalItemDirectory.get(player2Action.itemName ?? "")
+      if (itemUsed?.target === "self"){
+        this.player2.currentState.effectsApplied.push(itemUsed)
+      } else if (itemUsed?.target === "enemy") {
+        this.player1.currentState.effectsApplied.push(itemUsed)
+      } else {
+        //do nothing
+      }
+      if (itemUsed?.target) {
+        player2ActionOutcome = { outcomes: [
+          {
+            type: "update-stat",
+            itemName: itemUsed.name,
+            ...itemUsed
+          }
+        ] }
+      }
     }
-    //apply stats and effects update from player 2 action
+    //apply stats update from player 2 action
     for (let i = 0; i < player2ActionOutcome.outcomes.length; i++) {
       const outcome = player2ActionOutcome.outcomes[i];
       if (outcome.type === 'update-stat'){
         const updateStatOutcome = outcome as ActionOutcomeUpdateStat
-        if (updateStatOutcome.target === "enemy" && updateStatOutcome.affectedStat === "healthPoints") {
+        if (updateStatOutcome.target === "self" && updateStatOutcome.affectedStat === "healthPoints") {
+          const newHealthPoint = eval(`${this.player2.currentState.healthPoints} ${updateStatOutcome.modifier}`)
+          this.player2.currentState.healthPoints = Math.min(newHealthPoint, this.player2.baseState.maxHealthPoints)
+        }else if (updateStatOutcome.target === "enemy" && updateStatOutcome.affectedStat === "healthPoints") {
           this.player1.currentState.healthPoints = eval(`${this.player1.currentState.healthPoints} ${updateStatOutcome.modifier}`)
+        }
+        if (updateStatOutcome.source === "Inventory" && updateStatOutcome.itemName) {
+          this.player2.currentState.inventory[updateStatOutcome.itemName] -= 1
+          if (this.player2.currentState.inventory[updateStatOutcome.itemName] <= 0) {
+            delete this.player2.currentState.inventory[updateStatOutcome.itemName]
+          }
         }
       }
     }
 
+    //apply effects update from player 1 and 2 action
     for (let i = 0; i < this.player1.currentState.effectsApplied.length; i++) {
       const effect = this.player1.currentState.effectsApplied[i];
       if (effect.affectedRoundsLeft) {
@@ -145,6 +209,7 @@ export class Battle {
         this.player2.currentState.effectsApplied.splice(i, 1)
       }
     }
+
     return {
       player1ActionOutcome,
       player2ActionOutcome,
@@ -288,6 +353,7 @@ export class Battle {
     return {
       type: "update-stat",
       target: "enemy",
+      source: "Attack",
       affectedStat: "healthPoints",
       modifier: `- ${damageDealt}`,
     }

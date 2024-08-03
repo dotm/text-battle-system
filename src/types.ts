@@ -4,7 +4,6 @@
 /*
 ~kodok
 Implement ability and interaction between them: Illusion, Stun, Stumble, Evade
-Implement consumables and inventory.
 Implement ability leveling.
 implement NPCs.
 remove type any.
@@ -29,8 +28,10 @@ export interface ActionOutcomeNothing {
 export interface ActionOutcomeUpdateStat {
   type: "update-stat",
   target: "self" | "enemy",
-  affectedStat: string,
-  modifier: string,
+  source: "Attack" | "Passive Ability" | "Active Ability" | "Inventory",
+  affectedStat?: string,
+  modifier?: string,
+  itemName?: string,
 }
 export interface ActionOutcomeUpdateEffect {
   type: "update-effect",
@@ -65,13 +66,13 @@ export interface CharacterOutOfCombatAbility {
   name: string,
   description: string,
 }
-
+export type InventoryEntry = {[key: string]: number}
 export interface CharacterBaseState {
   passiveAbilityName: string,
   activeAbilityNames: string[],
   outOfCombatAbilityName: string,
   maxHealthPoints: number,
-  inventory: any[],
+  inventory: InventoryEntry, //map of {itemName: quantity}
   baseAttackDamage: number,
   penetrationWhenDoingAttack: number, //increase damage dealt
   armorWhenReceivingAttack: number, //decrease damage taken
@@ -84,7 +85,7 @@ export interface CharacterBaseState {
 export interface CharacterCurrentState {
   healthPoints: number,
   effectsApplied: CharacterBattleEffect[], //stunned, poisoned, buff, etc. create new Effect type ~kodok
-  inventory: any,
+  inventory: InventoryEntry, //map of {itemName: quantity}
   penetrationWhenDoingAttack: number, //increase damage dealt
   armorWhenReceivingAttack: number, //decrease damage taken
   critChanceIncrementWhenDoingAttack: number, //0.0 - 1.0
