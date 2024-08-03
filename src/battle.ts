@@ -6,7 +6,7 @@ import { ActionOutcomeUpdateStat, BattleRound, PlayerAction, PlayerActionOutcome
 export class Battle {
   player1: Character;
   player2: Character;
-  roundHistory: BattleRound[];
+  roundHistory: BattleRound[]; //every stat and effect changes should be recorded in the outcomes of each round so they can be replayed
   player1InitialData: string;
   player2InitialData: string;
   lastState: {
@@ -14,7 +14,7 @@ export class Battle {
     player2State: string,
     battleEnded: boolean,
     battleStatus: string,
-  };
+  }; //used for cache when user relogin and want to continue from lastState
   battleEnded: boolean = false;
   battleStatus: string = "starting";
 

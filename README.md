@@ -5,6 +5,10 @@
 - make outcomes more detailed (?)
 - relogin should load last state correctly (make sure serde is correct).
   - use file for saving and loading.
+- Implement ability and interaction between them: Illusion, Stun, Stumble, Evade.
+  - do this in Battle.generateRoundOutcomesAndSideEffects
+- separate round outcomes and applying side effects in Battle.generateRoundOutcomesAndSideEffects
+  - outcomes should be before side effects.
 
 ## Run in Local
 

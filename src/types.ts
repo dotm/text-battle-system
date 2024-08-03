@@ -1,11 +1,3 @@
-
-/*
-~kodok
-Implement ability and interaction between them: Illusion, Stun, Stumble, Evade
-remove type any.
-re-check requirements.
-*/
-
 export interface PlayerAction {
   type: "flee" | "attack" | "ability" | "use-item" | "do-nothing",
   abilityName?: undefined | string, //undefined if type is not "ability"
@@ -46,7 +38,9 @@ export interface BattleRound {
   player2ActionOutcome: PlayerActionOutcome,
 }
 
-export type OtherEffect = "Poison"
+//OtherEffect is for effects that doesn't just affect stats (health, armor, crit, etc.)
+// but also affect the battle mechanics (can't take action, nullify effects, etc.)
+export type OtherEffect = "Stun" | "Evade" | "Stumble"
 export interface CharacterBattleEffect {
   source: "Passive Ability" | "Active Ability" | "Inventory",
   name: string,
@@ -79,7 +73,7 @@ export interface CharacterBaseState {
 }
 export interface CharacterCurrentState {
   healthPoints: number,
-  effectsApplied: CharacterBattleEffect[], //stunned, poisoned, buff, etc. create new Effect type ~kodok
+  effectsApplied: CharacterBattleEffect[],
   inventory: InventoryEntry, //map of {itemName: quantity}
   penetrationWhenDoingAttack: number, //increase damage dealt
   armorWhenReceivingAttack: number, //decrease damage taken
