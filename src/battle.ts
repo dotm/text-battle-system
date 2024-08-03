@@ -1,3 +1,4 @@
+import { GlobalActiveAbilityDirectory } from "./activeAbility";
 import { Character } from "./character";
 import { ActionOutcomeUpdateStat, BattleRound, PlayerAction, PlayerActionOutcome } from "./types";
 
@@ -38,7 +39,7 @@ export class Battle {
     }
   }
 
-  generateRoundOutcomes({
+  generateRoundOutcomesAndSideEffects({
     player1Action,
     player2Action,
   }: {
@@ -60,6 +61,23 @@ export class Battle {
       const outcome = this.calculateFleeOutcome("player1")
       player1ActionOutcome = { outcomes: [{type: outcome}] }
       player1Flees = outcome === "flees"
+    } else if (player1Action.type === "ability") {
+      const activeAbility = GlobalActiveAbilityDirectory.get(player1Action.abilityName ?? "")
+      if (activeAbility?.target === "self"){
+        this.player1.currentState.effectsApplied.push(activeAbility)
+      } else if (activeAbility?.target === "enemy") {
+        this.player2.currentState.effectsApplied.push(activeAbility)
+      } else {
+        //do nothing
+      }
+      if (activeAbility?.target) {
+        player1ActionOutcome = { outcomes: [
+          {
+            type: "update-effect",
+            ...activeAbility
+          }
+        ] }
+      }
     }
     //apply stats and effects update from player 1 action
     for (let i = 0; i < player1ActionOutcome.outcomes.length; i++) {
@@ -82,6 +100,15 @@ export class Battle {
       const outcome = this.calculateFleeOutcome("player2")
       player2ActionOutcome = { outcomes: [{type: outcome}] }
       player2Flees = outcome === "flees"
+    } else if (player2Action.type === "ability") {
+      const activeAbility = GlobalActiveAbilityDirectory.get(player2Action.abilityName ?? "")
+      if (activeAbility?.target === "self"){
+        this.player2.currentState.effectsApplied.push(activeAbility)
+      } else if (activeAbility?.target === "enemy") {
+        this.player1.currentState.effectsApplied.push(activeAbility)
+      } else {
+        //do nothing
+      }
     }
     //apply stats and effects update from player 2 action
     for (let i = 0; i < player2ActionOutcome.outcomes.length; i++) {
@@ -91,6 +118,31 @@ export class Battle {
         if (updateStatOutcome.target === "enemy" && updateStatOutcome.affectedStat === "healthPoints") {
           this.player1.currentState.healthPoints = eval(`${this.player1.currentState.healthPoints} ${updateStatOutcome.modifier}`)
         }
+      }
+    }
+
+    for (let i = 0; i < this.player1.currentState.effectsApplied.length; i++) {
+      const effect = this.player1.currentState.effectsApplied[i];
+      if (effect.affectedRoundsLeft) {
+        if (effect.affectedStat === "healthPoints") {
+          this.player1.currentState.healthPoints = eval(`${this.player1.currentState.healthPoints} ${effect.modifier}`)
+        }
+        this.player1.currentState.effectsApplied[i].affectedRoundsLeft! -= 1
+      }
+      if (!effect.affectedRoundsLeft) {
+        this.player1.currentState.effectsApplied.splice(i, 1)
+      }
+    }
+    for (let i = 0; i < this.player2.currentState.effectsApplied.length; i++) {
+      const effect = this.player2.currentState.effectsApplied[i];
+      if (effect.affectedRoundsLeft) {
+        if (effect.affectedStat === "healthPoints") {
+          this.player2.currentState.healthPoints = eval(`${this.player2.currentState.healthPoints} ${effect.modifier}`)
+        }
+        this.player2.currentState.effectsApplied[i].affectedRoundsLeft! -= 1
+      }
+      if (!effect.affectedRoundsLeft) {
+        this.player2.currentState.effectsApplied.splice(i, 1)
       }
     }
     return {
@@ -115,8 +167,7 @@ export class Battle {
         player2ActionOutcome,
         player1Flees,
         player2Flees,
-      } = this.generateRoundOutcomes({player1Action, player2Action})
-      //generate outcome for player 2
+      } = this.generateRoundOutcomesAndSideEffects({player1Action, player2Action})
 
       //saveOutcome
       const battleRoundData: BattleRound = {
@@ -164,8 +215,16 @@ export class Battle {
     }
   }
   
-  calculateFleeOutcome(fleeingPlayer: "player1" | "player2"): "flees" | "nothing" {
-    return "flees" //calculate failed fleeing later ~kodok
+  calculateFleeOutcome(fleeingPlayerStr: "player1" | "player2"): "flees" | "nothing" {
+    const fleeingPlayer = fleeingPlayerStr === "player1" ? this.player1 : this.player2
+    const fleeingChance = fleeingPlayer.currentState.effectsApplied.reduce((acc, cur) => {
+      if (cur.affectedStat !== "fleeingChance"){
+        return acc
+      }
+      return eval(`${acc} ${cur.modifier}`)
+    }, fleeingPlayer.currentState.fleeingChance)
+    const flees = Math.random() < fleeingChance
+    return flees ? "flees" : "nothing"
   }
 
   calculateAttackDamageOutcome(attackerPlayer: "player1" | "player2"): ActionOutcomeUpdateStat {

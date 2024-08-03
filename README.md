@@ -1,3 +1,7 @@
+## TODO
+
+- Make affectedRoundsLeft correct and clean up when effects should be applied (currently inconsistent)
+
 ## Setup
 
 - mkdir text-battle-system

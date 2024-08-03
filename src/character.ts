@@ -40,9 +40,11 @@ export class Character {
         critMultiplierWhenDoingAttack: baseState.critMultiplierWhenDoingAttack,
         critChanceDecrementWhenReceivingAttack: baseState.critChanceDecrementWhenReceivingAttack,
         critMultiplierWhenReceivingAttack: baseState.critMultiplierWhenReceivingAttack,
+        fleeingChance: baseState.fleeingChance,
       }
       const passiveAbility = GlobalPassiveAbilityDirectory.get(baseState.passiveAbilityName)
-      if (passiveAbility) {
+      if (passiveAbility && passiveAbility.target === "self") {
+        //TODO: implement passive ability that affects enemy
         initialState.effectsApplied.push(passiveAbility)
       }
       this.currentState = initialState
@@ -51,12 +53,20 @@ export class Character {
 
   //action in combat
   async takeAction(): Promise<PlayerAction> {
-    const decisionStr = await rl.question(`(${this.characterName}) Please choose between: Attack (1), Ability (2), Flee (3), Use Item (4)\n`)
+    const decisionStr = await rl.question(
+      `(${this.characterName}) Please choose between: Attack (1), Ability (2), Flee (3), Use Item (4)\n`
+    )
     switch (decisionStr) {
       case "1":
         return { type: "attack" }
       case "2":
-        return { type: "ability" }
+        const abilityStr = await rl.question(
+          `(${this.characterName}) Please choose ability: ${this.baseState.activeAbilityNames.map((s,i)=>`${s} (${i+1})`).join(", ")}\n`
+        )
+        return {
+          type: "ability",
+          abilityName: this.baseState.activeAbilityNames[parseInt(abilityStr)-1] ?? undefined,
+        }
       case "3":
         return { type: "flee" }
         //other case here ~kodok
@@ -87,6 +97,8 @@ export function CreateDefaultWarriorCharacter(){
     characterClass: "warrior",
     baseState: {
       passiveAbilityName: "Warrior's Defense",
+      activeAbilityNames: ["Warrior's Stun", "Warrior's Immobilize"], //can only specify one active ability for non-NPC character
+      outOfCombatAbilityName: "Warrior's Instinct",
       maxHealthPoints: 150,
       inventory: [],
       baseAttackDamage: 10,
@@ -96,6 +108,7 @@ export function CreateDefaultWarriorCharacter(){
       critMultiplierWhenDoingAttack: 2,
       critChanceDecrementWhenReceivingAttack: 0,
       critMultiplierWhenReceivingAttack: 0.5,
+      fleeingChance: 1,
     },
   })
 }
@@ -105,6 +118,8 @@ export function CreateDefaultMageCharacter(){
     characterClass: "mage",
     baseState: {
       passiveAbilityName: "Mage's Crit",
+      activeAbilityNames: ["Mage's Illusion", "Mage's Poison Hex"], //can only specify one active ability for non-NPC character
+      outOfCombatAbilityName: "Mage's Barrier",
       maxHealthPoints: 100,
       inventory: [],
       baseAttackDamage: 20,
@@ -114,6 +129,7 @@ export function CreateDefaultMageCharacter(){
       critMultiplierWhenDoingAttack: 2,
       critChanceDecrementWhenReceivingAttack: 0,
       critMultiplierWhenReceivingAttack: 1,
+      fleeingChance: 1,
     },
   })
 }
@@ -123,6 +139,8 @@ export function CreateDefaultRogueCharacter(){
     characterClass: "rogue",
     baseState: {
       passiveAbilityName: "Rogue's Attack",
+      activeAbilityNames: ["Rogue's Evade", "Rogue's Armor Weaken"], //can only specify one active ability for non-NPC character
+      outOfCombatAbilityName: "Rogue's Steal Item",
       maxHealthPoints: 100,
       inventory: [],
       baseAttackDamage: 20,
@@ -132,6 +150,7 @@ export function CreateDefaultRogueCharacter(){
       critMultiplierWhenDoingAttack: 2,
       critChanceDecrementWhenReceivingAttack: 0,
       critMultiplierWhenReceivingAttack: 1,
+      fleeingChance: 1,
     },
   })
 }

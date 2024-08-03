@@ -3,12 +3,11 @@
 //TODO: separate character, battle, global map to different files ~kodok
 /*
 ~kodok
-Implement ability and interaction between them.
+Implement ability and interaction between them: Illusion, Stun, Stumble, Evade
 Implement consumables and inventory.
-Implement out of combat ability (just map with description and name).
 Implement ability leveling.
 implement NPCs.
-remove any type.
+remove type any.
 relogin should load last state correctly (make sure serde is correct).
 re-check requirements.
 */
@@ -19,7 +18,7 @@ export interface PlayerAction {
   itemName?: undefined | string, //undefined if type is not "ability"
 }
 export type PlayerActionOutcome = {
-  outcomes: (ActionOutcomeFlees | ActionOutcomeNothing | ActionOutcomeUpdateStat | ActionOutcomeAddEffect | ActionOutcomeRemoveEffect)[]
+  outcomes: (ActionOutcomeFlees | ActionOutcomeNothing | ActionOutcomeUpdateStat | ActionOutcomeUpdateEffect)[]
 }
 export interface ActionOutcomeFlees {
   type: "flees",
@@ -33,21 +32,15 @@ export interface ActionOutcomeUpdateStat {
   affectedStat: string,
   modifier: string,
 }
-export interface ActionOutcomeAddEffect {
-  type: "add-effect",
+export interface ActionOutcomeUpdateEffect {
+  type: "update-effect",
   target: "self" | "enemy",
   source: "Passive Ability" | "Active Ability" | "Inventory",
   name: string,
-  affectedStat: string,
-  modifier: string,
-}
-export interface ActionOutcomeRemoveEffect {
-  type: "remove-effect",
-  target: "self" | "enemy",
-  source: "Passive Ability" | "Active Ability" | "Inventory",
-  name: string,
-  affectedStat: string,
-  modifier: string,
+  affectedStat?: string,
+  modifier?: string,
+  otherEffect?: OtherEffect,
+  affectedRoundsLeft?: number,
 }
 export interface BattleRound {
   player1Action: PlayerAction,
@@ -57,15 +50,26 @@ export interface BattleRound {
   player2ActionOutcome: PlayerActionOutcome,
 }
 
+export type OtherEffect = "Poison"
 export interface CharacterBattleEffect {
   source: "Passive Ability" | "Active Ability" | "Inventory",
   name: string,
-  affectedStat: string,
-  modifier: string,
+  target: "self" | "enemy",
+  affectedStat?: string,
+  modifier?: string,
+  otherEffect?: OtherEffect,
+  affectedRoundsLeft?: number, // Undefined means permanent or one-off only.
+}
+export interface CharacterOutOfCombatAbility {
+  source: "Out of Combat Ability",
+  name: string,
+  description: string,
 }
 
 export interface CharacterBaseState {
   passiveAbilityName: string,
+  activeAbilityNames: string[],
+  outOfCombatAbilityName: string,
   maxHealthPoints: number,
   inventory: any[],
   baseAttackDamage: number,
@@ -75,6 +79,7 @@ export interface CharacterBaseState {
   critMultiplierWhenDoingAttack: number,
   critChanceDecrementWhenReceivingAttack: number, //0.0 - 1.0
   critMultiplierWhenReceivingAttack: number,
+  fleeingChance: number, //0.0 - 1.0
 }
 export interface CharacterCurrentState {
   healthPoints: number,
@@ -86,6 +91,7 @@ export interface CharacterCurrentState {
   critMultiplierWhenDoingAttack: number,
   critChanceDecrementWhenReceivingAttack: number, //0.0 - 1.0
   critMultiplierWhenReceivingAttack: number,
+  fleeingChance: number, //0.0 - 1.0
 }
 export type CharacterClass = "mage" | "rogue" | "warrior"
 export type CharacterSerializedOutput = {
