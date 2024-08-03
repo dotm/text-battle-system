@@ -1,12 +1,8 @@
 
-//TODO: separate stat effect and effects like poison? ~kodok
-//TODO: separate character, battle, global map to different files ~kodok
 /*
 ~kodok
 Implement ability and interaction between them: Illusion, Stun, Stumble, Evade
-Implement ability leveling.
 remove type any.
-relogin should load last state correctly (make sure serde is correct).
 re-check requirements.
 */
 

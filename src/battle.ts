@@ -193,7 +193,7 @@ export class Battle {
         }
         this.player1.currentState.effectsApplied[i].affectedRoundsLeft! -= 1
       }
-      if (!effect.affectedRoundsLeft) {
+      if (effect.affectedRoundsLeft === 0) {
         this.player1.currentState.effectsApplied.splice(i, 1)
       }
     }
@@ -205,7 +205,7 @@ export class Battle {
         }
         this.player2.currentState.effectsApplied[i].affectedRoundsLeft! -= 1
       }
-      if (!effect.affectedRoundsLeft) {
+      if (effect.affectedRoundsLeft === 0) {
         this.player2.currentState.effectsApplied.splice(i, 1)
       }
     }
@@ -303,7 +303,6 @@ export class Battle {
       defender = this.player1
     }
     //calculate damage dealt before crit
-    //make function for all the reduce below ~kodok
     const attackerPenetration = attacker.currentState.effectsApplied.reduce((acc, cur) => {
       if (cur.affectedStat !== "penetrationWhenDoingAttack"){
         return acc

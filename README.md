@@ -3,6 +3,8 @@
 - Make affectedRoundsLeft correct and clean up when effects should be applied (currently inconsistent).
 - use Enum for abilities and inventory items key.
 - make outcomes more detailed (?)
+- relogin should load last state correctly (make sure serde is correct).
+  - use file for saving and loading.
 
 ## Run in Local
 

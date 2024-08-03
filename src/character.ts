@@ -126,8 +126,8 @@ export function CreateDefaultWarriorCharacter(){
     characterClass: "warrior",
     baseState: {
       passiveAbilityName: "Warrior's Defense",
-      activeAbilityNames: ["Warrior's Stun", "Warrior's Immobilize"], //can only specify one active ability for non-NPC character
-      outOfCombatAbilityName: "Warrior's Instinct",
+      activeAbilityNames: ["Warrior's Stun Lv.1", "Warrior's Immobilize Lv.1"], //can only specify one active ability for non-NPC character
+      outOfCombatAbilityName: "Warrior's Instinct Lv.1",
       maxHealthPoints: 150,
       inventory: {},
       baseAttackDamage: 10,
@@ -147,8 +147,8 @@ export function CreateDefaultMageCharacter(){
     characterName: "Generic Mage",
     characterClass: "mage",
     baseState: {
-      passiveAbilityName: "Mage's Crit",
-      activeAbilityNames: ["Mage's Illusion", "Mage's Poison Hex"], //can only specify one active ability for non-NPC character
+      passiveAbilityName: "Mage's Crit Lv.1",
+      activeAbilityNames: ["Mage's Illusion Lv.1", "Mage's Poison Hex Lv.1"], //can only specify one active ability for non-NPC character
       outOfCombatAbilityName: "Mage's Barrier",
       maxHealthPoints: 100,
       inventory: {"Health Potion": 1},
@@ -169,8 +169,8 @@ export function CreateDefaultRogueCharacter(){
     characterName: "Generic Rogue",
     characterClass: "rogue",
     baseState: {
-      passiveAbilityName: "Rogue's Attack",
-      activeAbilityNames: ["Rogue's Evade", "Rogue's Armor Weaken"], //can only specify one active ability for non-NPC character
+      passiveAbilityName: "Rogue's Attack Lv.2",
+      activeAbilityNames: ["Rogue's Evade Lv.1", "Rogue's Armor Weaken Lv.1"], //can only specify one active ability for non-NPC character
       outOfCombatAbilityName: "Rogue's Steal Item",
       maxHealthPoints: 100,
       inventory: {"Health Potion": 3},
