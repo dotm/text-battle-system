@@ -5,7 +5,6 @@
 ~kodok
 Implement ability and interaction between them: Illusion, Stun, Stumble, Evade
 Implement ability leveling.
-implement NPCs.
 remove type any.
 relogin should load last state correctly (make sure serde is correct).
 re-check requirements.
@@ -94,10 +93,10 @@ export interface CharacterCurrentState {
   critMultiplierWhenReceivingAttack: number,
   fleeingChance: number, //0.0 - 1.0
 }
-export type CharacterClass = "mage" | "rogue" | "warrior"
 export type CharacterSerializedOutput = {
+  isNPC: boolean,
   characterName: string;
-  characterClass: CharacterClass;
+  characterClass: string;
   baseState: CharacterBaseState;
   currentState: CharacterCurrentState;
 }

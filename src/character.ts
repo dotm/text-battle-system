@@ -3,28 +3,40 @@ import { stdin, stdout } from 'node:process'
 const rl = createInterface({ input: stdin, output: stdout })
 
 import { GlobalPassiveAbilityDirectory } from "./passiveAbility";
-import { CharacterBaseState, CharacterClass, CharacterCurrentState, CharacterSerializedOutput, PlayerAction } from "./types";
+import { CharacterBaseState, CharacterCurrentState, CharacterSerializedOutput, PlayerAction } from "./types";
 
 export class Character {
+  isNPC: boolean;
   characterName: string;
-  characterClass: CharacterClass;
+  characterClass: string;
   baseState: CharacterBaseState;
   currentState: CharacterCurrentState;
   
   constructor({
+    isNPC,
     characterName,
     characterClass,
     baseState,
     currentState = undefined,
   }: {
+    isNPC: boolean,
     characterName: string,
-    characterClass: CharacterClass,
+    characterClass: string,
     baseState: CharacterBaseState;
     currentState?: CharacterCurrentState;
   }){
+    this.isNPC = isNPC
     this.characterName = characterName
     this.characterClass = characterClass
     this.baseState = baseState
+
+    const allowedPlayableCharacterClass = ["mage", "rogue", "warrior"]
+    if (!isNPC && !allowedPlayableCharacterClass.includes(characterClass)) {
+      throw new Error("Playable character class can only be one of: " + allowedPlayableCharacterClass.join(", "))
+    }
+    if (!isNPC && baseState.activeAbilityNames.length > 1) {
+      throw new Error("Playable character class can only have 1 active ability")
+    }
     
     //initialize
     if (currentState !== undefined) {
@@ -94,6 +106,7 @@ export class Character {
   //system methods
   serialize(): string {
     let obj: CharacterSerializedOutput = {
+      isNPC: this.isNPC,
       characterName: this.characterName,
       characterClass: this.characterClass,
       baseState: this.baseState,
@@ -108,6 +121,7 @@ export class Character {
 
 export function CreateDefaultWarriorCharacter(){
   return new Character({
+    isNPC: true,
     characterName: "Generic Warrior",
     characterClass: "warrior",
     baseState: {
@@ -129,6 +143,7 @@ export function CreateDefaultWarriorCharacter(){
 }
 export function CreateDefaultMageCharacter(){
   return new Character({
+    isNPC: true,
     characterName: "Generic Mage",
     characterClass: "mage",
     baseState: {
@@ -150,6 +165,7 @@ export function CreateDefaultMageCharacter(){
 }
 export function CreateDefaultRogueCharacter(){
   return new Character({
+    isNPC: true,
     characterName: "Generic Rogue",
     characterClass: "rogue",
     baseState: {

@@ -1,7 +1,8 @@
 ## TODO
 
-- Make affectedRoundsLeft correct and clean up when effects should be applied (currently inconsistent)
+- Make affectedRoundsLeft correct and clean up when effects should be applied (currently inconsistent).
 - use Enum for abilities and inventory items key.
+- make outcomes more detailed (?)
 
 ## Run in Local
 
